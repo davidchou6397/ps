@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>孕產服務管理系統</title>
+    
+    <!-- PWA 設定 -->
+    <link rel="manifest" href="#" id="manifest-placeholder">
+    <meta name="theme-color" content="#FF69B4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="孕產服務">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23FF69B4'/><path d='M30 45 Q50 25 70 45 Q50 65 30 45' fill='white'/></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #FFE4E1 0%, #FFF0F5 100%);
+            min-height: 100vh;
+            color: #2C3E50;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #FF69B4 0%, #FF1493 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .role-switch {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .role-btn {
+            padding: 12px 30px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .role-btn.active {
+            background: white;
+            color: #FF69B4;
+        }
+        
+        .role-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        .install-banner {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .install-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card h3 {
+            color: #FF69B4;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: #F8F9FA;
+            border-radius: 10px;
+            border-left: 4px solid #FF69B4;
+        }
+        
+        .service-info {
+            flex: 1;
+        }
+        
+        .service-name {
+            font-weight: bold;
+            color: #2C3E50;
+            margin-bottom: 5px;
+        }
+        
+        .service-client {
+            color: #7F8C8D;
+            font-size: 0.9em;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ECF0F1;
+            border-radius: 4px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF69B4 0%, #FF1493 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .status.pending {
+            background: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status.processing {
+            background: #CCE5FF;
+            color: #004085;
+        }
+        
+        .status.completed {
+            background: #D4EDDA;
+            color: #155724;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FF69B4 0%, #FF1493 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6C757D;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2C3E50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E8F4FD;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FF69B4;
+        }
+        
+        .client-view {
+            display: none;
+        }
+        
+        .admin-view {
+            display: none;
+        }
+        
+        .login-view {
+            display: block;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .login-card h3 {
+            color: #FF69B4;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+        
+        .login-form {
+            text-align: left;
+        }
+        
+        .password-input {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #7F8C8D;
+            font-size: 18px;
+        }
+        
+        .login-error {
+            background: #F8D7DA;
+            color: #721C24;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: white;
+            color: #FF69B4;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #FF69B4 0%, #FF1493 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .role-switch {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .service-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤱 孕產服務管理系統</h1>
+            <div class="role-switch">
+                <button class="role-btn" onclick="switchRole('admin')" id="adminBtn">管理員</button>
+                <button class="role-btn active" onclick="switchRole('client')" id="clientBtn">客戶</button>
+            </div>
+            <button class="logout-btn" id="logoutBtn" onclick="logout()" style="display: none;">登出</button>
+        </div>
+        
+        <div class="install-banner" id="installBanner" onclick="installApp()">
+            📱 點擊安裝應用程式到手機桌面
+        </div>
+        
+        <!-- 管理員登入視圖 -->
+        <div class="login-view" id="loginView" style="display: none;">
+            <div class="login-card">
+                <h3>🔐 管理員登入</h3>
+                <form class="login-form" id="loginForm">
+                    <div class="login-error" id="loginError">
+                        帳號或密碼錯誤，請重新輸入
+                    </div>
+                    <div class="form-group">
+                        <label>帳號</label>
+                        <input type="text" id="username" required placeholder="請輸入管理員帳號">
+                    </div>
+                    <div class="form-group">
+                        <label>密碼</label>
+                        <div class="password-input">
+                            <input type="password" id="password" required placeholder="請輸入密碼">
+                            <span class="password-toggle" onclick="togglePassword()">👁️</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">登入</button>
+                </form>
+                <div style="margin-top: 20px; font-size: 0.9em; color: #7F8C8D; text-align: center;">
+                    <p>測試帳號：admin</p>
+                    <p>測試密碼：123456</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 管理員視圖 -->
+        <div class="admin-view" id="adminView">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">24</div>
+                    <div class="stat-label">活躍客戶</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">進行中服務</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">15</div>
+                    <div class="stat-label">本月完成</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">滿意度</div>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="card">
+                    <h3>📋 服務管理</h3>
+                    <button class="btn btn-primary" onclick="openModal('addServiceModal')">新增服務</button>
+                    <div id="serviceList"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>👥 客戶管理</h3>
+                    <button class="btn btn-primary" onclick="openModal('addClientModal')">新增客戶</button>
+                    <div id="clientList"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 客戶視圖 -->
+        <div class="client-view" id="clientView">
+            <div class="card">
+                <h3>🔍 查詢服務進度</h3>
+                <div class="form-group">
+                    <input type="text" id="clientId" placeholder="請輸入客戶編號或手機號碼">
+                    <button class="btn btn-primary" onclick="queryProgress()">查詢進度</button>
+                </div>
+                <div id="progressResult"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新增服務模態框 -->
+    <div class="modal" id="addServiceModal">
+        <div class="modal-content">
+            <h3>新增服務</h3>
+            <form id="serviceForm">
+                <div class="form-group">
+                    <label>服務名稱</label>
+                    <select id="serviceName">
+                        <option value="產前檢查">產前檢查</option>
+                        <option value="孕期諮詢">孕期諮詢</option>
+                        <option value="產後護理">產後護理</option>
+                        <option value="新生兒照護">新生兒照護</option>
+                        <option value="哺乳指導">哺乳指導</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>客戶姓名</label>
+                    <input type="text" id="clientName" required>
+                </div>
+                <div class="form-group">
+                    <label>聯絡電話</label>
+                    <input type="tel" id="clientPhone" required>
+                </div>
+                <div class="form-group">
+                    <label>預約日期</label>
+                    <input type="date" id="appointmentDate" required>
+                </div>
+                <div class="form-group">
+                    <label>備註</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">新增服務</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addServiceModal')">取消</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 新增客戶模態框 -->
+    <div class="modal" id="addClientModal">
+        <div class="modal-content">
+            <h3>新增客戶</h3>
+            <form id="clientForm">
+                <div class="form-group">
+                    <label>客戶姓名</label>
+                    <input type="text" id="newClientName" required>
+                </div>
+                <div class="form-group">
+                    <label>聯絡電話</label>
+                    <input type="tel" id="newClientPhone" required>
+                </div>
+                <div class="form-group">
+                    <label>預產期</label>
+                    <input type="date" id="dueDate">
+                </div>
+                <div class="form-group">
+                    <label>地址</label>
+                    <input type="text" id="address">
+                </div>
+                <button type="submit" class="btn btn-primary">新增客戶</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addClientModal')">取消</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // PWA 安裝相關
+        let deferredPrompt;
+        const installBanner = document.getElementById('installBanner');
+        
+        // 檢測 PWA 安裝提示
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBanner.style.display = 'block';
+        });
+        
+        // 安裝 PWA
+        async function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('PWA 安裝成功');
+                    installBanner.style.display = 'none';
+                }
+                deferredPrompt = null;
+            } else {
+                // 為不支援自動安裝的瀏覽器提供手動指引
+                alert('請使用瀏覽器的「加入主畫面」或「安裝」功能將此應用程式添加到您的手機桌面。');
+            }
+        }
+        
+        // 創建 manifest.json
+        const manifest = {
+            name: "孕產服務管理系統",
+            short_name: "孕產服務",
+            description: "專業的孕產服務管理與進度追蹤系統",
+            start_url: "/",
+            display: "standalone",
+            background_color: "#FFE4E1",
+            theme_color: "#FF69B4",
+            orientation: "portrait-primary",
+            icons: [
+                {
+                    src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='80' fill='%23FF69B4'/><path d='M60 90 Q96 50 132 90 Q96 130 60 90' fill='white'/></svg>",
+                    sizes: "192x192",
+                    type: "image/svg+xml"
+                },
+                {
+                    src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='200' fill='%23FF69B4'/><path d='M150 240 Q256 120 362 240 Q256 360 150 240' fill='white'/></svg>",
+                    sizes: "512x512",
+                    type: "image/svg+xml"
+                }
+            ]
+        };
+        
+        // 設置 manifest
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.getElementById('manifest-placeholder').href = manifestURL;
+        
+        // 數據存儲
+        let services = JSON.parse(localStorage.getItem('services') || '[]');
+        let clients = JSON.parse(localStorage.getItem('clients') || '[]');
+        
+        // 生成示例數據
+        if (services.length === 0) {
+            services = [
+                {
+                    id: 1,
+                    name: "產前檢查",
+                    client: "王小美",
+                    phone: "0912345678",
+                    date: "2025-07-15",
+                    progress: 75,
+                    status: "processing",
+                    notes: "第三次檢查，胎兒發育正常"
+                },
+                {
+                    id: 2,
+                    name: "產後護理",
+                    client: "李太太",
+                    phone: "0923456789",
+                    date: "2025-07-10",
+                    progress: 100,
+                    status: "completed",
+                    notes: "護理完成，恢復良好"
+                },
+                {
+                    id: 3,
+                    name: "孕期諮詢",
+                    client: "張媽媽",
+                    phone: "0934567890",
+                    date: "2025-07-20",
+                    progress: 25,
+                    status: "pending",
+                    notes: "初次諮詢，準備相關資料"
+                }
+            ];
+            localStorage.setItem('services', JSON.stringify(services));
+        }
+        
+        if (clients.length === 0) {
+            clients = [
+                {
+                    id: 1,
+                    name: "王小美",
+                    phone: "0912345678",
+                    dueDate: "2025-09-15",
+                    address: "台北市信義區"
+                },
+                {
+                    id: 2,
+                    name: "李太太",
+                    phone: "0923456789",
+                    dueDate: "2025-08-20",
+                    address: "新北市板橋區"
+                },
+                {
+                    id: 3,
+                    name: "張媽媽",
+                    phone: "0934567890",
+                    dueDate: "2025-10-10",
+                    address: "桃園市中壢區"
+                }
+            ];
+            localStorage.setItem('clients', JSON.stringify(clients));
+        }
+        
+        // 登入狀態管理
+        let isAdminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+        
+        // 管理員帳號密碼設定
+        const adminCredentials = {
+            admin: '123456',
+            manager: 'admin123',
+            supervisor: 'super2025'
+        };
+        
+        // 密碼顯示/隱藏
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.textContent = '👁️';
+            }
+        }
+        
+        // 登入驗證
+        function validateLogin(username, password) {
+            return adminCredentials[username] === password;
+        }
+        
+        // 登入處理
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            if (validateLogin(username, password)) {
+                // 登入成功
+                isAdminLoggedIn = true;
+                localStorage.setItem('adminLoggedIn', 'true');
+                localStorage.setItem('adminUsername', username);
+                showAdminView();
+                document.getElementById('loginForm').reset();
+                errorDiv.style.display = 'none';
+            } else {
+                // 登入失敗
+                errorDiv.style.display = 'block';
+                document.getElementById('password').value = '';
+                
+                // 3秒後隱藏錯誤訊息
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // 登出
+        function logout() {
+            isAdminLoggedIn = false;
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminUsername');
+            switchRole('client');
+        }
+        
+        // 顯示管理員視圖
+        function showAdminView() {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('adminView').style.display = 'block';
+            document.getElementById('clientView').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'block';
+            document.getElementById('adminBtn').classList.add('active');
+            document.getElementById('clientBtn').classList.remove('active');
+            loadServices();
+            loadClients();
+        }
+        
+        // 角色切換
+        function switchRole(role) {
+            const adminView = document.getElementById('adminView');
+            const clientView = document.getElementById('clientView');
+            const loginView = document.getElementById('loginView');
+            const adminBtn = document.getElementById('adminBtn');
+            const clientBtn = document.getElementById('clientBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            // 重置按鈕狀態
+            adminBtn.classList.remove('active');
+            clientBtn.classList.remove('active');
+            
+            if (role === 'admin') {
+                if (isAdminLoggedIn) {
+                    // 已登入，直接顯示管理員視圖
+                    showAdminView();
+                } else {
+                    // 未登入，顯示登入畫面
+                    adminView.style.display = 'none';
+                    clientView.style.display = 'none';
+                    loginView.style.display = 'block';
+                    logoutBtn.style.display = 'none';
+                    adminBtn.classList.add('active');
+                }
+            } else {
+                // 客戶視圖
+                adminView.style.display = 'none';
+                clientView.style.display = 'block';
+                loginView.style.display = 'none';
+                logoutBtn.style.display = 'none';
+                clientBtn.classList.add('active');
+            }
+        }
+        
+        // 載入服務列表
+        function loadServices() {
+            const serviceList = document.getElementById('serviceList');
+            serviceList.innerHTML = '';
+            
+            services.forEach(service => {
+                const statusText = {
+                    'pending': '等待中',
+                    'processing': '進行中',
+                    'completed': '已完成'
+                };
+                
+                const serviceItem = document.createElement('div');
+                serviceItem.className = 'service-item';
+                serviceItem.innerHTML = `
+                    <div class="service-info">
+                        <div class="service-name">${service.name}</div>
+                        <div class="service-client">客戶：${service.client} | ${service.phone}</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${service.progress}%"></div>
+                        </div>
+                        <div>預約日期：${service.date}</div>
+                    </div>
+                    <div>
+                        <div class="status ${service.status}">${statusText[service.status]}</div>
+                        <button class="btn btn-primary" onclick="updateProgress(${service.id})">更新進度</button>
+                    </div>
+                `;
+                serviceList.appendChild(serviceItem);
+            });
+        }
+        
+        // 載入客戶列表
+        function loadClients() {
+            const clientList = document.getElementById('clientList');
+            clientList.innerHTML = '';
+            
+            clients.forEach(client => {
+                const clientItem = document.createElement('div');
+                clientItem.className = 'service-item';
+                clientItem.innerHTML = `
+                    <div class="service-info">
+                        <div class="service-name">${client.name}</div>
+                        <div class="service-client">電話：${client.phone}</div>
+                        <div class="service-client">預產期：${client.dueDate}</div>
+                        <div class="service-client">地址：${client.address}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="editClient(${client.id})">編輯</button>
+                    </div>
+                `;
+                clientList.appendChild(clientItem);
+            });
+        }
+        
+        // 查詢進度
+        function queryProgress() {
+            const clientId = document.getElementById('clientId').value.trim();
+            const resultDiv = document.getElementById('progressResult');
+            
+            if (!clientId) {
+                resultDiv.innerHTML = '<div style="color: red; margin-top: 10px;">請輸入客戶編號或手機號碼</div>';
+                return;
+            }
+            
+            const clientServices = services.filter(service => 
+                service.phone === clientId || service.client === clientId
+            );
+            
+            if (clientServices.length === 0) {
+                resultDiv.innerHTML = '<div style="color: red; margin-top: 10px;">找不到相關服務記錄</div>';
+                return;
+            }
+            
+            const statusText = {
+                'pending': '等待中',
+                'processing': '進行中',
+                'completed': '已完成'
+            };
+            
+            let html = '<div style="margin-top: 20px;"><h4>您的服務進度</h4>';
+            clientServices.forEach(service => {
+                html += `
+                    <div class="service-item">
+                        <div class="service-info">
+                            <div class="service-name">${service.name}</div>
+                            <div class="service-client">預約日期：${service.date}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${service.progress}%"></div>
+                            </div>
+                            <div>進度：${service.progress}%</div>
+                            <div>備註：${service.notes}</div>
+                        </div>
+                        <div class="status ${service.status}">${statusText[service.status]}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+        
+        // 更新進度
+        function updateProgress(serviceId) {
+            const service = services.find(s => s.id === serviceId);
+            if (!service) return;
+            
+            const newProgress = prompt(`更新 ${service.name} 的進度 (0-100):`, service.progress);
+            if (newProgress !== null) {
+                const progress = parseInt(newProgress);
+                if (progress >= 0 && progress <= 100) {
+                    service.progress = progress;
+                    if (progress === 100) {
+                        service.status = 'completed';
+                    } else if (progress > 0) {
+                        service.status = 'processing';
+                    }
+                    localStorage.setItem('services', JSON.stringify(services));
+                    loadServices();
+                }
+            }
+        }
+        
+        // 模態框控制
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // 表單提交
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+        
+        document.getElementById('serviceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newService = {
+                id: Date.now(),
+                name: document.getElementById('serviceName').value,
+                client: document.getElementById('clientName').value,
+                phone: document.getElementById('clientPhone').value,
+                date: document.getElementById('appointmentDate').value,
+                progress: 0,
+                status: 'pending',
+                notes: document.getElementById('notes').value
+            };
+            
+            services.push(newService);
+            localStorage.setItem('services', JSON.stringify(services));
+            loadServices();
+            closeModal('addServiceModal');
+            this.reset();
+        });
+        
+        document.getElementById('clientForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newClient = {
+                id: Date.now(),
+                name: document.getElementById('newClientName').value,
+                phone: document.getElementById('newClientPhone').value,
+                dueDate: document.getElementById('dueDate').value,
+                address: document.getElementById('address').value
+            };
+            
+            clients.push(newClient);
+            localStorage.setItem('clients', JSON.stringify(clients));
+            loadClients();
+            closeModal('addClientModal');
+            this.reset();
+        });
+        
+        // 點擊模態框外部關閉
+        window.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 檢查登入狀態
+            if (isAdminLoggedIn) {
+                switchRole('admin');
+            } else {
+                switchRole('client');
+            }
+            
+            loadServices();
+            loadClients();
+        });
+        
+        // Service Worker 註冊
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:application/javascript,console.log("Service Worker registered")')
+                .then(registration => console.log('SW registered'))
+                .catch(error => console.log('SW registration failed'));
+        }
+    </script>
+</body>
+</html>
